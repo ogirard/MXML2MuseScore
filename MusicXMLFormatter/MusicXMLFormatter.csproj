@@ -74,11 +74,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Core\HandledErrorException.cs" />
+    <Compile Include="Core\XmlExtensions.cs" />
     <Compile Include="ErrorPanel.xaml.cs">
       <DependentUpon>ErrorPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MuseScoreApp.cs" />
-    <Compile Include="XmlExtensions.cs" />
+    <Compile Include="Core\MuseScoreApp.cs" />
+    <Compile Include="Core\MusicXMLDocument.cs" />
     <Page Include="ErrorPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -98,7 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainWindowViewModel.cs" />
-    <Compile Include="MusicXMLDocument.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -124,7 +125,9 @@
     </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="icon.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Data\test.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

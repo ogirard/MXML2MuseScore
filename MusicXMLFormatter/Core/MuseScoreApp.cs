@@ -1,11 +1,11 @@
-ï»¿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MusicXMLFormatter.Properties;
 
-namespace MusicXMLFormatter
+namespace MusicXMLFormatter.Core
 {
   public class MuseScoreApp
   {
@@ -34,7 +34,9 @@ namespace MusicXMLFormatter
             return _museScoreExe;
           }
 
-          
+          throw new HandledErrorException("MuseScore nicht gefunden!",
+                                          "Unter " + Settings.Default.MuseScoreUrl +
+                                          " können Sie MuseScore herunterladen.");
         }
 
         return _museScoreExe;
@@ -44,7 +46,7 @@ namespace MusicXMLFormatter
     private string MuseScorePath
     {
       get { return Path.GetDirectoryName(MuseScoreExe); }
-      
+
     }
 
     public ImageSource ConvertMuseScoreToPNG(string museScoreFile, int dpi = 300)
@@ -52,7 +54,8 @@ namespace MusicXMLFormatter
       var museScoreFileInfo = new FileInfo(museScoreFile);
       if (!museScoreFileInfo.Exists)
       {
-        return null;
+        throw new HandledErrorException("Datei nicht gefunden!",
+                                        "Die MuseScore Datei '" + museScoreFile + "' konnte nicht gefunden werden.");
       }
       string imageFileName = museScoreFileInfo.FullName.Replace(".mscz", ".png ");
       ProcessStartInfo museScoreStartInfo = new ProcessStartInfo(MuseScoreExe)
@@ -70,7 +73,9 @@ namespace MusicXMLFormatter
         return new BitmapImage(new Uri("file://" + imageFileName));
       }
 
-      return null;
+      throw new HandledErrorException("Fehler!",
+                                      "Aus der MuseScore Datei '" + museScoreFile +
+                                      "' konnte kein PNG Bild generiert werden.");
     }
 
     public string ConvertXMLtoMuseScore(string xmlFile)
@@ -78,7 +83,9 @@ namespace MusicXMLFormatter
       var musicXmlFileInfo = new FileInfo(xmlFile);
       if (!musicXmlFileInfo.Exists || musicXmlFileInfo.Extension != ".xml")
       {
-        return null;
+        throw new HandledErrorException("Fehler!",
+                                        "Die MusicXML Datei '" + xmlFile +
+                                        "' konnte nicht gefunden werden.");
       }
       string museScoreFileName = musicXmlFileInfo.FullName.Replace(".xml", ".mscx");
 
@@ -101,7 +108,9 @@ namespace MusicXMLFormatter
         return museScoreFileName;
       }
 
-      return null;
+      throw new HandledErrorException("Fehler!",
+                                      "Die MusicXML Datei '" + xmlFile +
+                                      "' konnte nicht in eine MuseScore Datei umgewandelt werden.");
     }
 
     public string ConvertMuseScoretoCompressedMuseScore(string mscxFile)
@@ -109,7 +118,9 @@ namespace MusicXMLFormatter
       var museScoreFileInfo = new FileInfo(mscxFile);
       if (!museScoreFileInfo.Exists || museScoreFileInfo.Extension != ".mscx")
       {
-        return null;
+        throw new HandledErrorException("Fehler!",
+                                "Die MuseScore Datei '" + mscxFile +
+                                "' konnte nicht gefunden werden.");
       }
       string compressedMuseScoreFileName = museScoreFileInfo.FullName.Replace(".mscx", ".mscz");
 
@@ -132,7 +143,9 @@ namespace MusicXMLFormatter
         return compressedMuseScoreFileName;
       }
 
-      return null;
+      throw new HandledErrorException("Fehler!",
+                                "Die MuseScore Datei '" + mscxFile +
+                                "' konnte nicht in eine komprimierte MuseScore Datei umgewandelt werden.");
     }
   }
 }

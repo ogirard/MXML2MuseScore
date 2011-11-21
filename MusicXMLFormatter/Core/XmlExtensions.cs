@@ -1,6 +1,6 @@
-﻿using System.Xml;
+using System.Xml;
 
-namespace MusicXMLFormatter
+namespace MusicXMLFormatter.Core
 {
     public static class XmlExtensions
     {

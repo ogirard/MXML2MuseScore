@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Threading;
+using MusicXMLFormatter.Core;
 
 namespace MusicXMLFormatter
 {
@@ -11,8 +12,11 @@ namespace MusicXMLFormatter
     {
       private void AppUnhandledExceptionHandler(object sender, DispatcherUnhandledExceptionEventArgs e)
       {
-        
-        throw new NotImplementedException();
+        if (e.Exception is HandledErrorException)
+        {
+          ((MainWindow)Current.MainWindow).ViewModel.HandledErrorException = e.Exception as HandledErrorException;
+          e.Handled = true;
+        }
       }
     }
 }

@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Practices.Prism.ViewModel;
 
-namespace MusicXMLFormatter
+namespace MusicXMLFormatter.Core
 {
     public class MusicXMLDocument : NotificationObject
     {

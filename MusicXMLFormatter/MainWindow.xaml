@@ -2,60 +2,102 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:extToolkit="clr-namespace:Microsoft.Windows.Controls;assembly=WPFToolkit.Extended"
-        Title="MusicXML nach MuseScore Konvertierer" Height="285" Width="525" WindowStyle="ToolWindow">
-    <Window.Resources>
-        <Style TargetType="{x:Type TextBlock}" >
-            <Setter Property="Margin" Value="4" />
-            <Setter Property="Foreground" Value="DimGray" />
-        </Style>
-        <Style TargetType="{x:Type TextBox}" >
-            <Setter Property="Margin" Value="4" />
-        </Style>
-        <Style TargetType="{x:Type Button}" >
-            <Setter Property="Margin" Value="4" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-        </Style>
-    </Window.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        xmlns:MusicXMLFormatter="clr-namespace:MusicXMLFormatter"
+        Title="MusicXML nach MuseScore Konvertierer"
+        Width="525"
+        Height="285"
+        Icon="icon.png"
+        WindowStyle="ToolWindow">
+  <Window.Resources>
+    <Style TargetType="{x:Type TextBlock}">
+      <Setter Property="Margin" Value="4" />
+      <Setter Property="Foreground" Value="DimGray" />
+    </Style>
+    <Style TargetType="{x:Type TextBox}">
+      <Setter Property="Margin" Value="4" />
+    </Style>
+    <Style TargetType="{x:Type Button}">
+      <Setter Property="Margin" Value="4" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+  </Window.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
 
-        <Button Grid.Row="0" Content="MusicXML Datei öffnen" Command="{Binding LoadMusicXMLFileCommand}" />
+    <Button Grid.Row="0"
+            Command="{Binding LoadMusicXMLFileCommand}"
+            Content="MusicXML Datei öffnen" />
 
-        <TextBlock Grid.Row="1" Text="{Binding LoadedDocument}" FontStyle="Italic" Foreground="#018CC1" Margin="4,4,4,16"/>
+    <TextBlock Grid.Row="1"
+               Margin="4,4,4,16"
+               FontStyle="Italic"
+               Foreground="#018CC1"
+               Text="{Binding LoadedDocument}" />
 
-        <Grid Grid.Row="2" IsEnabled="{Binding IsEditingAllowed}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="Titel" Grid.Row="0" Grid.Column="0" />
-            <TextBox Text="{Binding CurrentDocument.Title, Mode=TwoWay}" Grid.Row="0" Grid.Column="1" />
-            <TextBlock Text="Untertitel" Grid.Row="1" Grid.Column="0" />
-            <TextBox Text="{Binding CurrentDocument.SubTitle, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" />
-            <TextBlock Text="Komponist" Grid.Row="2" Grid.Column="0" />
-            <TextBox Text="{Binding CurrentDocument.Composer, Mode=TwoWay}" Grid.Row="2" Grid.Column="1" />
-            <TextBlock Text="Texter" Grid.Row="3" Grid.Column="0" />
-            <TextBox Text="{Binding CurrentDocument.Texter, Mode=TwoWay}" Grid.Row="3" Grid.Column="1" />
-            <TextBlock Text="Arrangiert" Grid.Row="4" Grid.Column="0" />
-            <TextBox Text="{Binding CurrentDocument.ArrangedBy, Mode=TwoWay}" Grid.Row="4" Grid.Column="1" />
-        </Grid>
-
-        <Button Grid.Row="3" Command="{Binding SaveCurrentDocumentCommand}" Content="Speichern als MuseScore Datei (*.mscz)" />
-
-        <extToolkit:BusyIndicator IsBusy="{Binding IsBusy}" BusyContent="{Binding BusyText}" Grid.RowSpan="4" >
-            <ContentControl />
-        </extToolkit:BusyIndicator>
+    <Grid Grid.Row="2" IsEnabled="{Binding IsEditingAllowed}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Row="0"
+                 Grid.Column="0"
+                 Text="Titel" />
+      <TextBox Grid.Row="0"
+               Grid.Column="1"
+               Text="{Binding CurrentDocument.Title,
+                              Mode=TwoWay}" />
+      <TextBlock Grid.Row="1"
+                 Grid.Column="0"
+                 Text="Untertitel" />
+      <TextBox Grid.Row="1"
+               Grid.Column="1"
+               Text="{Binding CurrentDocument.SubTitle,
+                              Mode=TwoWay}" />
+      <TextBlock Grid.Row="2"
+                 Grid.Column="0"
+                 Text="Komponist" />
+      <TextBox Grid.Row="2"
+               Grid.Column="1"
+               Text="{Binding CurrentDocument.Composer,
+                              Mode=TwoWay}" />
+      <TextBlock Grid.Row="3"
+                 Grid.Column="0"
+                 Text="Texter" />
+      <TextBox Grid.Row="3"
+               Grid.Column="1"
+               Text="{Binding CurrentDocument.Texter,
+                              Mode=TwoWay}" />
+      <TextBlock Grid.Row="4"
+                 Grid.Column="0"
+                 Text="Arrangiert" />
+      <TextBox Grid.Row="4"
+               Grid.Column="1"
+               Text="{Binding CurrentDocument.ArrangedBy,
+                              Mode=TwoWay}" />
     </Grid>
+
+    <Button Grid.Row="3"
+            Command="{Binding SaveCurrentDocumentCommand}"
+            Content="Speichern als MuseScore Datei (*.mscz)" />
+
+    <extToolkit:BusyIndicator Grid.RowSpan="4"
+                              BusyContent="{Binding BusyText}"
+                              IsBusy="{Binding IsBusy}">
+      <ContentControl />
+    </extToolkit:BusyIndicator>
+
+    <MusicXMLFormatter:ErrorPanel Grid.RowSpan="4" HandledErrorException="{Binding HandledErrorException, Mode=TwoWay}" />
+  </Grid>
 </Window>
