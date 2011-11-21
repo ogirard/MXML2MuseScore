@@ -49,7 +49,7 @@ namespace MusicXMLFormatter.Core
 
     }
 
-    public ImageSource ConvertMuseScoreToPNG(string museScoreFile, int dpi = 300)
+    public string ConvertMuseScoreToPNG(string museScoreFile, int dpi = 300)
     {
       var museScoreFileInfo = new FileInfo(museScoreFile);
       if (!museScoreFileInfo.Exists)
@@ -61,16 +61,15 @@ namespace MusicXMLFormatter.Core
       ProcessStartInfo museScoreStartInfo = new ProcessStartInfo(MuseScoreExe)
                                                 {
                                                   CreateNoWindow = true,
-                                                  Arguments = "-r " + dpi + " -o " + imageFileName + " " + museScoreFileInfo.FullName,
-                                                  WorkingDirectory = MuseScorePath,
-                                                  UseShellExecute = true
+                                                  Arguments = "-r " + dpi + " -o \"" + imageFileName + "\" \"" + museScoreFileInfo.FullName + "\"",
+                                                  WorkingDirectory = MuseScorePath
                                                 };
       var process = Process.Start(museScoreStartInfo);
       process.WaitForExit(10000);
 
       if (File.Exists(imageFileName))
       {
-        return new BitmapImage(new Uri("file://" + imageFileName));
+        return imageFileName;
       }
 
       throw new HandledErrorException("Fehler!",
