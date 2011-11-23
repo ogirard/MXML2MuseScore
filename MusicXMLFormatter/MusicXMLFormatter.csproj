@@ -75,12 +75,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Core\HandledErrorException.cs" />
+    <Compile Include="Core\IMuseScoreTransformer.cs" />
     <Compile Include="Core\XmlExtensions.cs" />
     <Compile Include="ErrorPanel.xaml.cs">
       <DependentUpon>ErrorPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Core\MuseScoreApp.cs" />
-    <Compile Include="Core\MusicXMLDocument.cs" />
+    <Compile Include="Core\ScoreDocument.cs" />
+    <Compile Include="Transformer\ArrangedByTransformer.cs" />
     <Page Include="ErrorPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -133,6 +135,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
