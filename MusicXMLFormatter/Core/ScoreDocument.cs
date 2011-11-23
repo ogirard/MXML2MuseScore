@@ -1,17 +1,26 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
 using Microsoft.Practices.Prism.ViewModel;
+using MusicXMLFormatter.Transformer;
 
 namespace MusicXMLFormatter.Core
 {
-  public class MusicXMLDocument : NotificationObject
+  public class ScoreDocument : NotificationObject
   {
+    private static readonly IList<IMuseScoreTransformer> Transformers = new List<IMuseScoreTransformer>();
+
+    static ScoreDocument()
+    {
+      Transformers.Add(new ArrangedByTransformer());
+    }
+
     private readonly string _fileName;
 
-    public MusicXMLDocument(string fileName)
+    public ScoreDocument(string fileName)
     {
       this._fileName = fileName;
       this.LoadFromXml();

@@ -8,7 +8,7 @@ namespace MusicXMLFormatter
 {
   public class MainWindowViewModel : NotificationObject
   {
-    private MusicXMLDocument _currentDocument;
+    private ScoreDocument _currentDocument;
     private string _loadedDocument;
 
     public DelegateCommand LoadMusicXMLFileCommand { get; set; }
@@ -69,7 +69,7 @@ namespace MusicXMLFormatter
       get { return CurrentDocument != null && !IsBusy; }
     }
 
-    public MusicXMLDocument CurrentDocument
+    public ScoreDocument CurrentDocument
     {
       get { return _currentDocument; }
       set
@@ -93,7 +93,7 @@ namespace MusicXMLFormatter
       {
         IsBusy = true;
         BusyText = "Lade Datei...";
-        var task = Task.Factory.StartNew(() => new MusicXMLDocument(ofd.FileName));
+        var task = Task.Factory.StartNew(() => new ScoreDocument(ofd.FileName));
         task.ContinueWith(resultTask =>
                               {
                                 CurrentDocument = resultTask.Result;
