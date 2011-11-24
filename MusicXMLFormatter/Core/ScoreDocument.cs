@@ -200,7 +200,7 @@ namespace MusicXMLFormatter.Core
       ArrangedBy = arrangedByText.Replace(ArrangedByPrefix, "");
     }
 
-    private string GetArrangedBy()
+    public string GetArrangedBy()
     {
       return ArrangedByPrefix + ArrangedBy.Trim();
     }
@@ -220,7 +220,7 @@ namespace MusicXMLFormatter.Core
       }
     }
 
-    private string GetComposerAndTexter()
+    public string GetComposerAndTexter()
     {
       if (!string.IsNullOrEmpty(Texter))
       {
@@ -245,7 +245,7 @@ namespace MusicXMLFormatter.Core
       }
     }
 
-    private string GetSubTitleAndPattern()
+    public string GetSubTitleAndPattern()
     {
       if (Pattern != 0)
       {
