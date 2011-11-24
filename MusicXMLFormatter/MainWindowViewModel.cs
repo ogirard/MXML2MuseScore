@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 using Microsoft.Win32;
@@ -39,7 +41,7 @@ namespace MusicXMLFormatter
 
     public string LoadedDocument
     {
-      get { return _loadedDocument ?? "Keine MusicXML Datei geladen"; }
+      get { return ShortenFileName(_loadedDocument) ?? "Keine MusicXML Datei geladen"; }
       private set
       {
         if (_loadedDocument != value)
@@ -48,6 +50,21 @@ namespace MusicXMLFormatter
           RaisePropertyChanged(() => LoadedDocument);
         }
       }
+    }
+
+    private static string ShortenFileName(string fileName)
+    {
+      const int MaxLength = 50;
+      if (fileName == null || fileName.Length <= MaxLength)
+      {
+        return fileName;
+      }
+
+      var name = Path.GetFileName(fileName) ?? "";
+      var firstPart = fileName.Substring(0, fileName.Length - name.Length - 1);
+      var shortPath = firstPart.Substring(Math.Max(firstPart.Length - MaxLength - name.Length - 3, 0)) + "\\" + name;
+      shortPath = shortPath.Substring(shortPath.IndexOf('\\') > 0 ? shortPath.IndexOf('\\') : 0);
+      return "..." + shortPath;
     }
 
     private void SaveCurrentDocument()

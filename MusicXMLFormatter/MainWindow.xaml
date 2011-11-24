@@ -5,8 +5,9 @@
         xmlns:MusicXMLFormatter="clr-namespace:MusicXMLFormatter"
         Title="MusicXML nach MuseScore Konvertierer"
         Width="525"
-        Height="285"
+        Height="352"
         Icon="icon.png"
+        ResizeMode="NoResize"
         WindowStyle="ToolWindow">
   <Window.Resources>
     <Style TargetType="{x:Type TextBlock}">
@@ -14,6 +15,12 @@
       <Setter Property="Foreground" Value="DimGray" />
     </Style>
     <Style TargetType="{x:Type TextBox}">
+      <Setter Property="Margin" Value="4" />
+    </Style>
+    <Style TargetType="{x:Type CheckBox}">
+      <Setter Property="Margin" Value="4" />
+    </Style>
+    <Style TargetType="{x:Type ComboBox}">
       <Setter Property="Margin" Value="4" />
     </Style>
     <Style TargetType="{x:Type Button}">
@@ -35,12 +42,26 @@
 
     <TextBlock Grid.Row="1"
                Margin="4,4,4,16"
+               HorizontalAlignment="Stretch"
+               Background="#92F4CD6B"
                FontStyle="Italic"
                Foreground="#018CC1"
-               Text="{Binding LoadedDocument}" />
+               Text="{Binding LoadedDocument}">
+      <TextBlock.Style>
+        <Style TargetType="TextBlock">
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding LoadedDocument}" Value="Keine MusicXML Datei geladen">
+              <Setter Property="Background" Value="#00000000" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </TextBlock.Style>
+    </TextBlock>
 
     <Grid Grid.Row="2" IsEnabled="{Binding IsEditingAllowed}">
       <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
@@ -67,28 +88,67 @@
                               Mode=TwoWay}" />
       <TextBlock Grid.Row="2"
                  Grid.Column="0"
-                 Text="Komponist" />
-      <TextBox Grid.Row="2"
-               Grid.Column="1"
-               Text="{Binding CurrentDocument.Composer,
-                              Mode=TwoWay}" />
+                 Text="Pattern" />
+      <ComboBox Grid.Row="2"
+                Grid.Column="1"
+                SelectedIndex="{Binding CurrentDocument.Pattern,
+                                        Mode=TwoWay}">
+        <ComboBox.Items>
+          <ComboBoxItem>Kein Pattern</ComboBoxItem>
+          <ComboBoxItem>Pattern 1</ComboBoxItem>
+          <ComboBoxItem>Pattern 2</ComboBoxItem>
+          <ComboBoxItem>Pattern 3</ComboBoxItem>
+          <ComboBoxItem>Pattern 4</ComboBoxItem>
+          <ComboBoxItem>Pattern 5</ComboBoxItem>
+          <ComboBoxItem>Pattern 6</ComboBoxItem>
+        </ComboBox.Items>
+      </ComboBox>
       <TextBlock Grid.Row="3"
                  Grid.Column="0"
-                 Text="Texter" />
-      <TextBox Grid.Row="3"
-               Grid.Column="1"
-               Text="{Binding CurrentDocument.Texter,
-                              Mode=TwoWay}" />
+                 Text="Komponist / Texter" />
+      <Grid Grid.Row="3" Grid.Column="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBox Grid.Column="0"
+                 HorizontalAlignment="Stretch"
+                 Text="{Binding CurrentDocument.Composer,
+                                Mode=TwoWay}" />
+        <TextBox Grid.Column="1"
+                 HorizontalAlignment="Stretch"
+                 Text="{Binding CurrentDocument.Texter,
+                                Mode=TwoWay}" />
+      </Grid>
       <TextBlock Grid.Row="4"
                  Grid.Column="0"
                  Text="Arrangiert" />
+
       <TextBox Grid.Row="4"
                Grid.Column="1"
                Text="{Binding CurrentDocument.ArrangedBy,
                               Mode=TwoWay}" />
+
+      <TextBlock Grid.Row="5"
+                 Grid.Column="0"
+                 Text="Exportiere PNG" />
+
+      <CheckBox Grid.Row="5"
+                Grid.Column="1"
+                IsChecked="{Binding CurrentDocument.ExportPNG,
+                                    Mode=TwoWay}" />
+      <TextBlock Grid.Row="6"
+                 Grid.Column="0"
+                 Text="Beschriftungen entfernen" />
+
+      <CheckBox Grid.Row="6"
+                Grid.Column="1"
+                IsChecked="{Binding CurrentDocument.RemoveLabels,
+                                    Mode=TwoWay}" />
     </Grid>
 
     <Button Grid.Row="3"
+            Margin="4,16,4,4"
             Command="{Binding SaveCurrentDocumentCommand}"
             Content="Speichern als MuseScore Datei (*.mscz)" />
 

@@ -12,6 +12,10 @@ namespace MusicXMLFormatter.Core
   public class ScoreDocument : NotificationObject
   {
     private static readonly IList<IMuseScoreTransformer> Transformers = new List<IMuseScoreTransformer>();
+    private const string ComposerPrefix = "K: ";
+    private const string TexterPrefix = "T: ";
+    private const string ArrangedByPrefix = "arr. ";
+    private const string PatternPrefix = " (Pattern ";
 
     static ScoreDocument()
     {
@@ -76,6 +80,51 @@ namespace MusicXMLFormatter.Core
       }
     }
 
+    private int _pattern;
+
+    public int Pattern
+    {
+      get { return _pattern; }
+      set
+      {
+        if (_pattern != value)
+        {
+          _pattern = value;
+          RaisePropertyChanged(() => Pattern);
+        }
+      }
+    }
+
+    private bool _exportPNG;
+
+    public bool ExportPNG
+    {
+      get { return _exportPNG; }
+      set
+      {
+        if (_exportPNG != value)
+        {
+          _exportPNG = value;
+          RaisePropertyChanged(() => ExportPNG);
+        }
+      }
+    }
+
+    private bool _removeLabels;
+
+    public bool RemoveLabels
+    {
+      get { return _removeLabels; }
+      set
+      {
+        if (_removeLabels != value)
+        {
+          _removeLabels = value;
+          RaisePropertyChanged(() => RemoveLabels);
+        }
+      }
+    }
+
     private string _texter = string.Empty;
 
     public string Texter
@@ -127,19 +176,15 @@ namespace MusicXMLFormatter.Core
               break;
             case "14centertop":
               // subtitle
-              SubTitle = creditNode.InnerText;
+              SetSubTitleAndPattern(creditNode.InnerText);
               break;
             case "12righttop":
               // composer
-              Composer = creditNode.InnerText;
-              break;
-            case "12lefttop":
-              // texter
-              Texter = creditNode.InnerText;
+              SetComposerAndTexter(creditNode.InnerText);
               break;
             case "10righttop":
               // arranged by
-              ArrangedBy = creditNode.InnerText.Replace("arr. ", "");
+              SetArrangedBy(creditNode.InnerText);
               break;
           }
         }
@@ -148,6 +193,66 @@ namespace MusicXMLFormatter.Core
           Console.WriteLine("Header element not defined! (" + ex + ")");
         }
       }
+    }
+
+    private void SetArrangedBy(string arrangedByText)
+    {
+      ArrangedBy = arrangedByText.Replace(ArrangedByPrefix, "");
+    }
+
+    private string GetArrangedBy()
+    {
+      return ArrangedByPrefix + ArrangedBy.Trim();
+    }
+
+    private void SetComposerAndTexter(string composerText)
+    {
+      if (!string.IsNullOrEmpty(composerText) && composerText.Contains(ComposerPrefix))
+      {
+        var ctex = composerText.Split(',');
+        Composer = ctex[0].Replace(ComposerPrefix, "").Trim();
+        Texter = ctex[1].Replace(TexterPrefix, "").Trim();
+      }
+      else
+      {
+        Composer = composerText;
+        Texter = "";
+      }
+    }
+
+    private string GetComposerAndTexter()
+    {
+      if (!string.IsNullOrEmpty(Texter))
+      {
+        return ComposerPrefix + Composer.Trim() + ", " + TexterPrefix + Texter.Trim();
+      }
+
+      return Composer.Trim();
+    }
+
+    private void SetSubTitleAndPattern(string subTitleText)
+    {
+      if (!string.IsNullOrEmpty(subTitleText) && subTitleText.Contains(PatternPrefix))
+      {
+        int patternIdx = subTitleText.IndexOf(PatternPrefix);
+        SubTitle = subTitleText.Substring(0, patternIdx).Trim();
+        Pattern = int.Parse(subTitleText.Substring(patternIdx + PatternPrefix.Length).Trim(' ', ')'));
+      }
+      else
+      {
+        SubTitle = subTitleText;
+        Pattern = 0;
+      }
+    }
+
+    private string GetSubTitleAndPattern()
+    {
+      if (Pattern != 0)
+      {
+        return SubTitle.Trim() + PatternPrefix + Pattern + ")";
+      }
+
+      return SubTitle.Trim();
     }
 
     public void Save()
@@ -174,10 +279,9 @@ namespace MusicXMLFormatter.Core
         }
 
         AppendCreditNode(xdoc.DocumentElement, "595.238", "1626.98", "24", "center", "top", Title.Trim());
-        AppendCreditNode(xdoc.DocumentElement, "595.238", "1570.29", "14", "center", "top", SubTitle.Trim());
-        AppendCreditNode(xdoc.DocumentElement, "1133.79", "1559.98", "12", "right", "top", Composer.Trim());
-        AppendCreditNode(xdoc.DocumentElement, "1133.79", "1583.98", "10", "right", "top", "arr. " + ArrangedBy.Trim());
-        AppendCreditNode(xdoc.DocumentElement, "56.6893", "1559.98", "12", "left", "top", Texter.Trim());
+        AppendCreditNode(xdoc.DocumentElement, "595.238", "1570.29", "14", "center", "top", GetSubTitleAndPattern());
+        AppendCreditNode(xdoc.DocumentElement, "1133.79", "1559.98", "12", "right", "top", GetComposerAndTexter());
+        AppendCreditNode(xdoc.DocumentElement, "1133.79", "1583.98", "10", "right", "top", GetArrangedBy());
         xdoc.Save(tempXml);
 
         var museScore = new MuseScoreApp();
@@ -191,7 +295,7 @@ namespace MusicXMLFormatter.Core
 
           File.Copy(compressedMuseScoreFile, targetMuseScoreFile, true);
 
-          museScore.ConvertMuseScoreToPNG(compressedMuseScoreFile, 96);
+          // museScore.ConvertMuseScoreToPNG(compressedMuseScoreFile, 96);
 
           Process.Start("file://" + Path.GetDirectoryName(targetMuseScoreFile));
         }
@@ -210,8 +314,22 @@ namespace MusicXMLFormatter.Core
 
     private void ProcessMuseScoreFile(string museScoreFile)
     {
-
-
+      try
+      {
+        var museScoreXmlFile = new XmlDocument();
+        museScoreXmlFile.Load(museScoreFile);
+        foreach (var museScoreTransformer in Transformers)
+        {
+          museScoreTransformer.ApplyTransformation(this, museScoreXmlFile);
+        }
+        museScoreXmlFile.Save(museScoreFile);
+      }
+      catch (Exception ex)
+      {
+        throw new HandledErrorException("Fehler!",
+                                        "Beim Konvertieren ist ein Fehler aufgetreten." + Environment.NewLine +
+                                        Environment.NewLine + ex.Message + Environment.NewLine + ex.StackTrace);
+      }
     }
 
     private void AppendCreditNode(XmlElement root, string defaultX, string defaultY, string fontSize, string justify, string valign, string content)
