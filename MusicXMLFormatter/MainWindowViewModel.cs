@@ -16,12 +16,20 @@ namespace MusicXMLFormatter
     public DelegateCommand LoadMusicXMLFileCommand { get; set; }
     public DelegateCommand ConvertMusicXMLFileCommand { get; set; }
     public DelegateCommand SaveCurrentDocumentCommand { get; set; }
+    public DelegateCommand ShowOptionsCommand { get; set; }
 
     public MainWindowViewModel()
     {
       LoadMusicXMLFileCommand = new DelegateCommand(LoadMusicXMLFile, () => !IsBusy);
       ConvertMusicXMLFileCommand = new DelegateCommand(ConvertMusicXMLFile, () => IsEditingAllowed);
       SaveCurrentDocumentCommand = new DelegateCommand(SaveCurrentDocument, () => IsEditingAllowed);
+      ShowOptionsCommand = new DelegateCommand(ShowOptions);
+    }
+
+    private void ShowOptions()
+    {
+      Options options = new Options();
+      options.ShowDialog();
     }
 
     private void ConvertMusicXMLFile()
@@ -64,6 +72,11 @@ namespace MusicXMLFormatter
       var firstPart = fileName.Substring(0, fileName.Length - name.Length - 1);
       var shortPath = firstPart.Substring(Math.Max(firstPart.Length - MaxLength - name.Length - 3, 0)) + "\\" + name;
       shortPath = shortPath.Substring(shortPath.IndexOf('\\') > 0 ? shortPath.IndexOf('\\') : 0);
+      if (shortPath.Length + fileName.Length > MaxLength + 20)
+      {
+        shortPath = name;
+      }
+
       return "..." + shortPath;
     }
 

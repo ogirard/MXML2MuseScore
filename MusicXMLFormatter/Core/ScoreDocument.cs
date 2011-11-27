@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Microsoft.Practices.Prism.ViewModel;
+using MusicXMLFormatter.Properties;
 using MusicXMLFormatter.Transformer;
 
 namespace MusicXMLFormatter.Core
@@ -12,14 +13,17 @@ namespace MusicXMLFormatter.Core
   public class ScoreDocument : NotificationObject
   {
     private static readonly IList<IMuseScoreTransformer> Transformers = new List<IMuseScoreTransformer>();
-    private const string ComposerPrefix = "K: ";
+    private const string ComposerPrefix = "M: ";
     private const string TexterPrefix = "T: ";
     private const string ArrangedByPrefix = "arr. ";
-    private const string PatternPrefix = " (Pattern ";
+    private const string PatternPrefix = " (Begleitvariante ";
+
+    private const string FileNamePostfix = "_Begleitvariante";
 
     static ScoreDocument()
     {
       Transformers.Add(new ArrangedByTransformer());
+      Transformers.Add(new RemoveCaptionsTransformer());
     }
 
     private readonly string _fileName;
@@ -106,6 +110,37 @@ namespace MusicXMLFormatter.Core
         {
           _exportPNG = value;
           RaisePropertyChanged(() => ExportPNG);
+        }
+      }
+    }
+
+
+    private bool _exportPDF;
+
+    public bool ExportPDF
+    {
+      get { return _exportPDF; }
+      set
+      {
+        if (_exportPDF != value)
+        {
+          _exportPDF = value;
+          RaisePropertyChanged(() => ExportPDF);
+        }
+      }
+    }
+
+    private bool _extractVoice;
+
+    public bool extractVoice
+    {
+      get { return _extractVoice; }
+      set
+      {
+        if (_extractVoice != value)
+        {
+          _extractVoice = value;
+          RaisePropertyChanged(() => extractVoice);
         }
       }
     }
@@ -249,7 +284,7 @@ namespace MusicXMLFormatter.Core
     {
       if (Pattern != 0)
       {
-        return SubTitle.Trim() + PatternPrefix + Pattern + ")";
+        return (SubTitle.Trim() + PatternPrefix + Pattern + ")").Trim();
       }
 
       return SubTitle.Trim();
@@ -263,6 +298,12 @@ namespace MusicXMLFormatter.Core
         return;
 
       }
+      var outputDirectory = Settings.Default.OutputPath.Trim('\\') + "\\";
+      if (!Directory.Exists(outputDirectory))
+      {
+        Directory.CreateDirectory(outputDirectory);
+      }
+
       var dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
       var tempDir = Directory.CreateDirectory(dir + "\\temp\\" + Guid.NewGuid());
       try
@@ -291,7 +332,8 @@ namespace MusicXMLFormatter.Core
         {
           ProcessMuseScoreFile(museScoreFile);
           var compressedMuseScoreFile = museScore.ConvertMuseScoretoCompressedMuseScore(museScoreFile);
-          var targetMuseScoreFile = xmlFileName.FullName.Replace(".xml", ".mscz");
+
+          var targetMuseScoreFile = GetFileName(outputDirectory);
 
           File.Copy(compressedMuseScoreFile, targetMuseScoreFile, true);
 
@@ -310,6 +352,16 @@ namespace MusicXMLFormatter.Core
       {
         tempDir.Delete(true);
       }
+    }
+
+    private string GetFileName(string outputDirectory)
+    {
+      var songDir = outputDirectory + Title + "\\";
+      if (!Directory.Exists(songDir))
+      {
+        Directory.CreateDirectory(songDir);
+      }
+      return songDir + Title.Trim().Replace(" ", "_") + (Pattern == 0 ? "" : FileNamePostfix + Pattern) + ".mscz";
     }
 
     private void ProcessMuseScoreFile(string museScoreFile)

@@ -4,8 +4,8 @@
         xmlns:extToolkit="clr-namespace:Microsoft.Windows.Controls;assembly=WPFToolkit.Extended"
         xmlns:MusicXMLFormatter="clr-namespace:MusicXMLFormatter"
         Title="MusicXML nach MuseScore Konvertierer"
-        Width="525"
-        Height="352"
+        Width="559"
+        Height="396"
         Icon="icon.png"
         ResizeMode="NoResize"
         WindowStyle="ToolWindow">
@@ -36,9 +36,19 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
-    <Button Grid.Row="0"
-            Command="{Binding LoadMusicXMLFileCommand}"
-            Content="MusicXML Datei öffnen" />
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Button Grid.Column="0"
+              Command="{Binding LoadMusicXMLFileCommand}"
+              Content="MusicXML Datei öffnen" />
+      <Button Grid.Column="1"
+              Command="{Binding ShowOptionsCommand}"
+              Content="Einstellungen" />
+    </Grid>
+
 
     <TextBlock Grid.Row="1"
                Margin="4,4,4,16"
@@ -67,6 +77,8 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
@@ -88,19 +100,19 @@
                               Mode=TwoWay}" />
       <TextBlock Grid.Row="2"
                  Grid.Column="0"
-                 Text="Pattern" />
+                 Text="Begleitvariante" />
       <ComboBox Grid.Row="2"
                 Grid.Column="1"
                 SelectedIndex="{Binding CurrentDocument.Pattern,
                                         Mode=TwoWay}">
         <ComboBox.Items>
-          <ComboBoxItem>Kein Pattern</ComboBoxItem>
-          <ComboBoxItem>Pattern 1</ComboBoxItem>
-          <ComboBoxItem>Pattern 2</ComboBoxItem>
-          <ComboBoxItem>Pattern 3</ComboBoxItem>
-          <ComboBoxItem>Pattern 4</ComboBoxItem>
-          <ComboBoxItem>Pattern 5</ComboBoxItem>
-          <ComboBoxItem>Pattern 6</ComboBoxItem>
+          <ComboBoxItem>Keine Begleitvariante anzeigen</ComboBoxItem>
+          <ComboBoxItem>Begleitvariante 1</ComboBoxItem>
+          <ComboBoxItem>Begleitvariante 2</ComboBoxItem>
+          <ComboBoxItem>Begleitvariante 3</ComboBoxItem>
+          <ComboBoxItem>Begleitvariante 4</ComboBoxItem>
+          <ComboBoxItem>Begleitvariante 5</ComboBoxItem>
+          <ComboBoxItem>Begleitvariante 6</ComboBoxItem>
         </ComboBox.Items>
       </ComboBox>
       <TextBlock Grid.Row="3"
@@ -123,27 +135,38 @@
       <TextBlock Grid.Row="4"
                  Grid.Column="0"
                  Text="Arrangiert" />
-
       <TextBox Grid.Row="4"
                Grid.Column="1"
                Text="{Binding CurrentDocument.ArrangedBy,
                               Mode=TwoWay}" />
-
       <TextBlock Grid.Row="5"
                  Grid.Column="0"
-                 Text="Exportiere PNG" />
-
+                 Text="Beschriftungen entfernen" />
       <CheckBox Grid.Row="5"
                 Grid.Column="1"
-                IsChecked="{Binding CurrentDocument.ExportPNG,
+                IsChecked="{Binding CurrentDocument.RemoveLabels,
                                     Mode=TwoWay}" />
       <TextBlock Grid.Row="6"
                  Grid.Column="0"
-                 Text="Beschriftungen entfernen" />
-
+                 Text="PNG erstellen" />
       <CheckBox Grid.Row="6"
                 Grid.Column="1"
-                IsChecked="{Binding CurrentDocument.RemoveLabels,
+                IsChecked="{Binding CurrentDocument.ExportPNG,
+                                    Mode=TwoWay}" />
+      <TextBlock Grid.Row="7"
+                 Grid.Column="0"
+                 Text="PDF erstellen" />
+      <CheckBox Grid.Row="7"
+                Grid.Column="1"
+                IsChecked="{Binding CurrentDocument.ExportPDF,
+                                    Mode=TwoWay}" />
+      <TextBlock Grid.Row="8"
+                 Grid.Column="0"
+                 Text="Liedstimme separat abspeichern" />
+
+      <CheckBox Grid.Row="8"
+                Grid.Column="1"
+                IsChecked="{Binding CurrentDocument.ExtractVoice,
                                     Mode=TwoWay}" />
     </Grid>
 

@@ -11,5 +11,8 @@
     <Setting Name="MuseScoreExeDefault" Type="System.String" Scope="Application">
       <Value Profile="(Default)">${ProgramFiles}\MuseScore\bin\mscore.exe</Value>
     </Setting>
+    <Setting Name="OutputPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">N:\Valérie\Lernobjekt PHZH\Lernobjekt Liedbegleitung\Published</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
