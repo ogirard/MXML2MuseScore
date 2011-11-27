@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 
 namespace MusicXMLFormatter
 {
@@ -22,6 +23,14 @@ namespace MusicXMLFormatter
     private void SaveClickHandler(object sender, RoutedEventArgs e)
     {
       this.Close();
+    }
+
+    private void KeyUpHandler(object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Delete)
+      {
+        ViewModel.DeleteEntryCommand.Execute();
+      }
     }
   }
 }

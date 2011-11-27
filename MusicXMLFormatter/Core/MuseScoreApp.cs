@@ -47,7 +47,7 @@ namespace MusicXMLFormatter.Core
 
     }
 
-    public string ConvertMuseScoreToPNG(string museScoreFile, int dpi = 300)
+    public void ConvertMuseScoreToPNG(string museScoreFile, string imageFileName, int dpi = 300)
     {
       var museScoreFileInfo = new FileInfo(museScoreFile);
       if (!museScoreFileInfo.Exists)
@@ -55,7 +55,7 @@ namespace MusicXMLFormatter.Core
         throw new HandledErrorException("Datei nicht gefunden!",
                                         "Die MuseScore Datei '" + museScoreFile + "' konnte nicht gefunden werden.");
       }
-      string imageFileName = museScoreFileInfo.FullName.Replace(".mscz", ".png ");
+
       ProcessStartInfo museScoreStartInfo = new ProcessStartInfo(MuseScoreExe)
                                                 {
                                                   CreateNoWindow = true,
@@ -65,14 +65,38 @@ namespace MusicXMLFormatter.Core
       var process = Process.Start(museScoreStartInfo);
       process.WaitForExit(10000);
 
-      if (File.Exists(imageFileName))
+      if (!File.Exists(imageFileName.Replace(".png", "-1.png")))
       {
-        return imageFileName;
+        throw new HandledErrorException("Fehler!",
+                                "Aus der MuseScore Datei '" + museScoreFile +
+                                "' konnte kein PNG Bild generiert werden.");
+      }
+    }
+
+    public void ConvertMuseScoreToPDF(string museScoreFile, string pdfFileName)
+    {
+      var museScoreFileInfo = new FileInfo(museScoreFile);
+      if (!museScoreFileInfo.Exists)
+      {
+        throw new HandledErrorException("Datei nicht gefunden!",
+                                        "Die MuseScore Datei '" + museScoreFile + "' konnte nicht gefunden werden.");
       }
 
-      throw new HandledErrorException("Fehler!",
-                                      "Aus der MuseScore Datei '" + museScoreFile +
-                                      "' konnte kein PNG Bild generiert werden.");
+      ProcessStartInfo museScoreStartInfo = new ProcessStartInfo(MuseScoreExe)
+      {
+        CreateNoWindow = true,
+        Arguments = " -o \"" + pdfFileName + "\" \"" + museScoreFileInfo.FullName + "\"",
+        WorkingDirectory = MuseScorePath
+      };
+      var process = Process.Start(museScoreStartInfo);
+      process.WaitForExit(10000);
+
+      if (!File.Exists(pdfFileName))
+      {
+        throw new HandledErrorException("Fehler!",
+                                        "Aus der MuseScore Datei '" + museScoreFile +
+                                        "' konnte keine PDF Datei generiert werden.");
+      }
     }
 
     public string ConvertXMLtoMuseScore(string xmlFile)

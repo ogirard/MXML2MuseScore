@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Options"
         Width="450"
-        Height="120"
+        Height="450"
         ResizeMode="NoResize"
         WindowStyle="ToolWindow">
   <Window.Resources>
@@ -23,6 +23,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
@@ -42,10 +43,20 @@
     <TextBox Grid.Row="1"
              Grid.Column="1"
              Text="{Binding OutputPath,
-                            Mode=TwoWay}" />
-    <Button Grid.Row="2"
+                        Mode=TwoWay}" />
+    <TextBlock Grid.Row="2"
+               Grid.Column="0"
+               Text="History" />
+    <ListView Grid.Row="2"
+             Grid.Column="1"
+              Margin="4"
+              ItemsSource="{Binding History}"
+              KeyUp="KeyUpHandler"
+              SelectedItem="{Binding SelectedHistoryEntry}" />
+    <Button Grid.Row="3"
             Grid.ColumnSpan="2"
+            Click="SaveClickHandler"
             Command="{Binding SaveCommand}"
-            Content="Speichern" Click="SaveClickHandler" />
+            Content="Speichern" />
   </Grid>
 </Window>

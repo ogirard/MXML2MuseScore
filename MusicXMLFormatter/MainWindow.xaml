@@ -87,10 +87,13 @@
       <TextBlock Grid.Row="0"
                  Grid.Column="0"
                  Text="Titel" />
-      <TextBox Grid.Row="0"
-               Grid.Column="1"
-               Text="{Binding CurrentDocument.Title,
-                              Mode=TwoWay}" />
+      <ComboBox Grid.Row="0"
+                Grid.Column="1"
+                IsEditable="True"
+                ItemsSource="{Binding History}"
+                SelectedValuePath="Title"
+                SelectedValue="{Binding CurrentDocument.Title, Mode=TwoWay}"
+                SelectionChanged="HistoryEntryChangedHandler"/>
       <TextBlock Grid.Row="1"
                  Grid.Column="0"
                  Text="Untertitel" />

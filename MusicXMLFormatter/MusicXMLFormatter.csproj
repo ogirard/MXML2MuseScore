@@ -79,6 +79,7 @@
     </ApplicationDefinition>
     <Compile Include="Core\HandledErrorException.cs" />
     <Compile Include="Core\IMuseScoreTransformer.cs" />
+    <Compile Include="Core\HistoryEntry.cs" />
     <Compile Include="Core\XmlExtensions.cs" />
     <Compile Include="ErrorPanel.xaml.cs">
       <DependentUpon>ErrorPanel.xaml</DependentUpon>
@@ -149,6 +150,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\history.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

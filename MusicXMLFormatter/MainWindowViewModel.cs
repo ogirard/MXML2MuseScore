@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 using Microsoft.Win32;
@@ -10,6 +13,7 @@ namespace MusicXMLFormatter
 {
   public class MainWindowViewModel : NotificationObject
   {
+
     private ScoreDocument _currentDocument;
     private string _loadedDocument;
 
@@ -24,11 +28,33 @@ namespace MusicXMLFormatter
       ConvertMusicXMLFileCommand = new DelegateCommand(ConvertMusicXMLFile, () => IsEditingAllowed);
       SaveCurrentDocumentCommand = new DelegateCommand(SaveCurrentDocument, () => IsEditingAllowed);
       ShowOptionsCommand = new DelegateCommand(ShowOptions);
+      History = new ObservableCollection<HistoryEntry>();
+      var historyDoc = XDocument.Load(HistoryEntry.HistoryPath);
+      foreach (var entry in historyDoc.Root.Elements("entry"))
+      {
+        _history.Add(new HistoryEntry(entry));
+      }
+    }
+
+    private ObservableCollection<HistoryEntry> _history;
+
+    public ObservableCollection<HistoryEntry> History
+    {
+      get { return _history; }
+      set
+      {
+        if (_history != value)
+        {
+          _history = value;
+          this.RaisePropertyChanged(() => History);
+        }
+      }
     }
 
     private void ShowOptions()
     {
       Options options = new Options();
+      options.ViewModel.History = History;
       options.ShowDialog();
     }
 
@@ -91,6 +117,16 @@ namespace MusicXMLFormatter
         {
           IsBusy = false;
         });
+
+        // history
+        var historyEntry = new HistoryEntry(_currentDocument);
+        foreach (var olderEntry in History.Where(e => e.Title == historyEntry.Title).ToList())
+        {
+          History.Remove(olderEntry);
+        }
+
+        History.Add(historyEntry);
+        HistoryEntry.SaveHistory(History);
       }
     }
 
@@ -111,6 +147,7 @@ namespace MusicXMLFormatter
           RaisePropertyChanged(() => this.IsEditingAllowed);
           SaveCurrentDocumentCommand.RaiseCanExecuteChanged();
           ConvertMusicXMLFileCommand.RaiseCanExecuteChanged();
+          ShowOptionsCommand.RaiseCanExecuteChanged();
           LoadedDocument = CurrentDocument == null ? null : CurrentDocument.FileName;
         }
       }

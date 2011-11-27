@@ -34,6 +34,8 @@ namespace MusicXMLFormatter.Core
       this.LoadFromXml();
     }
 
+    #region    Properties
+
     public string FileName
     {
       get { return _fileName; }
@@ -114,7 +116,6 @@ namespace MusicXMLFormatter.Core
       }
     }
 
-
     private bool _exportPDF;
 
     public bool ExportPDF
@@ -132,7 +133,7 @@ namespace MusicXMLFormatter.Core
 
     private bool _extractVoice;
 
-    public bool extractVoice
+    public bool ExtractVoice
     {
       get { return _extractVoice; }
       set
@@ -140,7 +141,7 @@ namespace MusicXMLFormatter.Core
         if (_extractVoice != value)
         {
           _extractVoice = value;
-          RaisePropertyChanged(() => extractVoice);
+          RaisePropertyChanged(() => ExtractVoice);
         }
       }
     }
@@ -190,45 +191,9 @@ namespace MusicXMLFormatter.Core
       }
     }
 
+    #endregion Properties
 
-    private void LoadFromXml()
-    {
-      var xdoc = new XmlDocument();
-      xdoc.Load(this._fileName);
-      foreach (XmlElement creditNode in xdoc.DocumentElement.SelectNodes("//credit-words").Cast<XmlElement>().ToList())
-      {
-        try
-        {
-          // remove all existing credit nodes
-          string identifier = creditNode.Attributes["font-size"].Value + creditNode.Attributes["justify"].Value +
-                              creditNode.Attributes["valign"].Value;
-
-          switch (identifier)
-          {
-            case "24centertop":
-              // title
-              Title = creditNode.InnerText;
-              break;
-            case "14centertop":
-              // subtitle
-              SetSubTitleAndPattern(creditNode.InnerText);
-              break;
-            case "12righttop":
-              // composer
-              SetComposerAndTexter(creditNode.InnerText);
-              break;
-            case "10righttop":
-              // arranged by
-              SetArrangedBy(creditNode.InnerText);
-              break;
-          }
-        }
-        catch (Exception ex)
-        {
-          Console.WriteLine("Header element not defined! (" + ex + ")");
-        }
-      }
-    }
+    #region    Special Accessors
 
     private void SetArrangedBy(string arrangedByText)
     {
@@ -290,6 +255,49 @@ namespace MusicXMLFormatter.Core
       return SubTitle.Trim();
     }
 
+    #endregion Special Accessors
+
+    #region    Load & Save
+
+    private void LoadFromXml()
+    {
+      var xdoc = new XmlDocument();
+      xdoc.Load(this._fileName);
+      foreach (XmlElement creditNode in xdoc.DocumentElement.SelectNodes("//credit-words").Cast<XmlElement>().ToList())
+      {
+        try
+        {
+          // remove all existing credit nodes
+          string identifier = creditNode.Attributes["font-size"].Value + creditNode.Attributes["justify"].Value +
+                              creditNode.Attributes["valign"].Value;
+
+          switch (identifier)
+          {
+            case "24centertop":
+              // title
+              Title = creditNode.InnerText;
+              break;
+            case "14centertop":
+              // subtitle
+              SetSubTitleAndPattern(creditNode.InnerText);
+              break;
+            case "12righttop":
+              // composer
+              SetComposerAndTexter(creditNode.InnerText);
+              break;
+            case "10righttop":
+              // arranged by
+              SetArrangedBy(creditNode.InnerText);
+              break;
+          }
+        }
+        catch (Exception ex)
+        {
+          Console.WriteLine("Header element not defined! (" + ex + ")");
+        }
+      }
+    }
+
     public void Save()
     {
       var xmlFileName = new FileInfo(_fileName);
@@ -337,7 +345,15 @@ namespace MusicXMLFormatter.Core
 
           File.Copy(compressedMuseScoreFile, targetMuseScoreFile, true);
 
-          // museScore.ConvertMuseScoreToPNG(compressedMuseScoreFile, 96);
+          if (ExportPNG)
+          {
+            museScore.ConvertMuseScoreToPNG(compressedMuseScoreFile, targetMuseScoreFile.Replace(".mscz", ".png"), 96);
+          }
+
+          if (ExportPDF)
+          {
+            museScore.ConvertMuseScoreToPDF(compressedMuseScoreFile, targetMuseScoreFile.Replace(".mscz", ".pdf"));
+          }
 
           Process.Start("file://" + Path.GetDirectoryName(targetMuseScoreFile));
         }
@@ -414,5 +430,7 @@ namespace MusicXMLFormatter.Core
         root.AppendChild(creditNode);
       }
     }
+
+    #endregion Load & Save
   }
 }
