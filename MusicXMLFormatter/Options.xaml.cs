@@ -24,13 +24,5 @@ namespace MusicXMLFormatter
     {
       this.Close();
     }
-
-    private void KeyUpHandler(object sender, KeyEventArgs e)
-    {
-      if (e.Key == Key.Delete)
-      {
-        ViewModel.DeleteEntryCommand.Execute();
-      }
-    }
   }
 }

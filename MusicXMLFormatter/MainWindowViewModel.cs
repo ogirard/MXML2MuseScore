@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.Windows.Controls;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 using Microsoft.Win32;
@@ -13,7 +13,7 @@ namespace MusicXMLFormatter
 {
   public class MainWindowViewModel : NotificationObject
   {
-
+    private readonly HistoryService _historyService;
     private ScoreDocument _currentDocument;
     private string _loadedDocument;
 
@@ -21,40 +21,26 @@ namespace MusicXMLFormatter
     public DelegateCommand ConvertMusicXMLFileCommand { get; set; }
     public DelegateCommand SaveCurrentDocumentCommand { get; set; }
     public DelegateCommand ShowOptionsCommand { get; set; }
+    public DelegateCommand<SelectionChangedEventArgs> HistorySelectionChangedCommand { get; set; }
 
     public MainWindowViewModel()
     {
+      _historyService = HistoryService.Instance;
       LoadMusicXMLFileCommand = new DelegateCommand(LoadMusicXMLFile, () => !IsBusy);
       ConvertMusicXMLFileCommand = new DelegateCommand(ConvertMusicXMLFile, () => IsEditingAllowed);
       SaveCurrentDocumentCommand = new DelegateCommand(SaveCurrentDocument, () => IsEditingAllowed);
       ShowOptionsCommand = new DelegateCommand(ShowOptions);
-      History = new ObservableCollection<HistoryEntry>();
-      var historyDoc = XDocument.Load(HistoryEntry.HistoryPath);
-      foreach (var entry in historyDoc.Root.Elements("entry"))
-      {
-        _history.Add(new HistoryEntry(entry));
-      }
+      HistorySelectionChangedCommand = new DelegateCommand<SelectionChangedEventArgs>(HistorySelectionChangedHandler, e => CurrentDocument != null);
     }
-
-    private ObservableCollection<HistoryEntry> _history;
 
     public ObservableCollection<HistoryEntry> History
     {
-      get { return _history; }
-      set
-      {
-        if (_history != value)
-        {
-          _history = value;
-          this.RaisePropertyChanged(() => History);
-        }
-      }
+      get { return _historyService.History; }
     }
 
     private void ShowOptions()
     {
       Options options = new Options();
-      options.ViewModel.History = History;
       options.ShowDialog();
     }
 
@@ -119,14 +105,7 @@ namespace MusicXMLFormatter
         });
 
         // history
-        var historyEntry = new HistoryEntry(_currentDocument);
-        foreach (var olderEntry in History.Where(e => e.Title == historyEntry.Title).ToList())
-        {
-          History.Remove(olderEntry);
-        }
-
-        History.Add(historyEntry);
-        HistoryEntry.SaveHistory(History);
+        _historyService.Add(_currentDocument);
       }
     }
 
@@ -148,6 +127,7 @@ namespace MusicXMLFormatter
           SaveCurrentDocumentCommand.RaiseCanExecuteChanged();
           ConvertMusicXMLFileCommand.RaiseCanExecuteChanged();
           ShowOptionsCommand.RaiseCanExecuteChanged();
+          HistorySelectionChangedCommand.RaiseCanExecuteChanged();
           LoadedDocument = CurrentDocument == null ? null : CurrentDocument.FileName;
         }
       }
@@ -181,6 +161,14 @@ namespace MusicXMLFormatter
           this._busyText = value;
           RaisePropertyChanged(() => this.BusyText);
         }
+      }
+    }
+
+    private void HistorySelectionChangedHandler(SelectionChangedEventArgs e)
+    {
+      foreach (HistoryEntry item in e.AddedItems.OfType<HistoryEntry>())
+      {
+        item.ApplyScoreDocument(CurrentDocument);
       }
     }
 

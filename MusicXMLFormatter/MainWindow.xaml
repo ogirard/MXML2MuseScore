@@ -2,7 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:extToolkit="clr-namespace:Microsoft.Windows.Controls;assembly=WPFToolkit.Extended"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:MusicXMLFormatter="clr-namespace:MusicXMLFormatter"
+        xmlns:WPF="clr-namespace:MusicXMLFormatter.WPF"
         Title="MusicXML nach MuseScore Konvertierer"
         Width="559"
         Height="396"
@@ -91,9 +93,14 @@
                 Grid.Column="1"
                 IsEditable="True"
                 ItemsSource="{Binding History}"
-                SelectedValuePath="Title"
-                SelectedValue="{Binding CurrentDocument.Title, Mode=TwoWay}"
-                SelectionChanged="HistoryEntryChangedHandler"/>
+                Text="{Binding CurrentDocument.Title,
+                               Mode=TwoWay}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="SelectionChanged">
+            <WPF:EventToCommand Command="{Binding HistorySelectionChangedCommand}" PassEventArgsToCommand="True" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </ComboBox>
       <TextBlock Grid.Row="1"
                  Grid.Column="0"
                  Text="Untertitel" />

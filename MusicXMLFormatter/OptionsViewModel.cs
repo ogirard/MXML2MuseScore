@@ -9,17 +9,24 @@ namespace MusicXMLFormatter
 {
   public class OptionsViewModel : NotificationObject
   {
+    private readonly HistoryService _historyService;
+
     public OptionsViewModel()
     {
-      SaveCommand = new DelegateCommand(SaveOptions);
-      DeleteEntryCommand = new DelegateCommand(DeleteEntry, () => SelectedHistoryEntry != null);
+      _historyService = HistoryService.Instance;
       _outputPath = Settings.Default.OutputPath;
       _musePath = Settings.Default.MuseScoreExe;
+
+      SaveCommand = new DelegateCommand(SaveOptions);
+      ListKeyUpCommand = new DelegateCommand<KeyEventArgs>(DeleteEntry, e => SelectedHistoryEntry != null);
     }
 
-    private void DeleteEntry()
+    private void DeleteEntry(KeyEventArgs e)
     {
-      throw new System.NotImplementedException();
+      if (e.Key == Key.Delete)
+      {
+        _historyService.Remove(SelectedHistoryEntry);
+      }
     }
 
     private void SaveOptions()
@@ -27,7 +34,6 @@ namespace MusicXMLFormatter
       Settings.Default.OutputPath = OutputPath;
       Settings.Default.MuseScoreExe = MusePath;
       Settings.Default.Save();
-      HistoryEntry.SaveHistory(History);
     }
 
     private string _outputPath;
@@ -71,13 +77,17 @@ namespace MusicXMLFormatter
         {
           this._selectedHistoryEntry = value;
           RaisePropertyChanged(() => this.SelectedHistoryEntry);
-          DeleteEntryCommand.RaiseCanExecuteChanged();
+          this.ListKeyUpCommand.RaiseCanExecuteChanged();
         }
       }
     }
 
     public ICommand SaveCommand { get; set; }
-    public DelegateCommand DeleteEntryCommand { get; set; }
-    public ObservableCollection<HistoryEntry> History { get; set; }
+    public DelegateCommand<KeyEventArgs> ListKeyUpCommand { get; set; }
+
+    public ObservableCollection<HistoryEntry> History
+    {
+      get { return _historyService.History; }
+    }
   }
 }

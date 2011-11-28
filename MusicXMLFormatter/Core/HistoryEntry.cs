@@ -1,14 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace MusicXMLFormatter.Core
 {
   public class HistoryEntry
   {
-    public readonly static string HistoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Data\\history.xml";
-
     public HistoryEntry(XElement entry)
     {
       Title = entry.Element("title").Value;
@@ -91,22 +86,6 @@ namespace MusicXMLFormatter.Core
     public string ArrangedBy { get; set; }
 
     #endregion Properties
-
-    public static void SaveHistory(IEnumerable<HistoryEntry> history)
-    {
-      var doc = XDocument.Load(HistoryPath);
-      foreach (var child in doc.Root.Elements())
-      {
-        child.Remove();
-      }
-
-      foreach (var historyEntry in history)
-      {
-        doc.Root.Add(historyEntry.ToXmlNode());
-      }
-
-      doc.Save(HistoryPath);
-    }
 
     public override string ToString()
     {

@@ -1,6 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
-using MusicXMLFormatter.Core;
 
 namespace MusicXMLFormatter
 {
@@ -19,20 +17,6 @@ namespace MusicXMLFormatter
     {
       get { return DataContext as MainWindowViewModel; }
       set { DataContext = value; }
-    }
-
-    private void HistoryEntryChangedHandler(object sender, SelectionChangedEventArgs e)
-    {
-      if (ViewModel.CurrentDocument != null)
-      {
-        foreach (var item in e.AddedItems)
-        {
-          if (item is HistoryEntry)
-          {
-            ((HistoryEntry)item).ApplyScoreDocument(ViewModel.CurrentDocument);
-          }
-        }
-      }
     }
   }
 }

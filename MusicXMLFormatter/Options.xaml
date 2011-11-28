@@ -1,8 +1,10 @@
 ﻿<Window x:Class="MusicXMLFormatter.Options"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:WPF="clr-namespace:MusicXMLFormatter.WPF"
         Title="Options"
-        Width="450"
+        Width="600"
         Height="450"
         ResizeMode="NoResize"
         WindowStyle="ToolWindow">
@@ -43,16 +45,21 @@
     <TextBox Grid.Row="1"
              Grid.Column="1"
              Text="{Binding OutputPath,
-                        Mode=TwoWay}" />
+                            Mode=TwoWay}" />
     <TextBlock Grid.Row="2"
                Grid.Column="0"
                Text="History" />
     <ListView Grid.Row="2"
-             Grid.Column="1"
+              Grid.Column="1"
               Margin="4"
               ItemsSource="{Binding History}"
-              KeyUp="KeyUpHandler"
-              SelectedItem="{Binding SelectedHistoryEntry}" />
+              SelectedItem="{Binding SelectedHistoryEntry}">
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="KeyUpHandler">
+          <WPF:EventToCommand Command="{Binding ListKeyUpCommand}" PassEventArgsToCommand="True" />
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
+    </ListView>
     <Button Grid.Row="3"
             Grid.ColumnSpan="2"
             Click="SaveClickHandler"

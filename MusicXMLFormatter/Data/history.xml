@@ -1,4 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <history>
- 
+  <entry>
+    <title>Test 99</title>
+    <subtitle>Noch ein Test</subtitle>
+    <composer>Me</composer>
+    <pattern>0</pattern>
+    <exportpng>True</exportpng>
+    <exportpdf>True</exportpdf>
+    <extractvoice>False</extractvoice>
+    <removelabels>True</removelabels>
+    <texter></texter>
+    <arrangedby>Me</arrangedby>
+  </entry>
+  <entry>
+    <title>Test 2</title>
+    <subtitle>Noch ein Test 22</subtitle>
+    <composer>Me 2</composer>
+    <pattern>3</pattern>
+    <exportpng>True</exportpng>
+    <exportpdf>True</exportpdf>
+    <extractvoice>False</extractvoice>
+    <removelabels>True</removelabels>
+    <texter></texter>
+    <arrangedby>Me Again</arrangedby>
+  </entry>
 </history>
