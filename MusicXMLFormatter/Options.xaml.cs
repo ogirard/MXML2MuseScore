@@ -11,7 +11,6 @@ namespace MusicXMLFormatter
     public Options()
     {
       InitializeComponent();
-      ViewModel = new OptionsViewModel();
     }
 
     public OptionsViewModel ViewModel

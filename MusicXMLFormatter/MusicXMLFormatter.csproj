@@ -83,6 +83,8 @@
     <Compile Include="Core\HistoryService.cs" />
     <Compile Include="Core\IMuseScoreTransformer.cs" />
     <Compile Include="Core\HistoryEntry.cs" />
+    <Compile Include="Core\Transformer\AutoBreakTransformer.cs" />
+    <Compile Include="Core\Transformer\PageSettingsTransformer.cs" />
     <Compile Include="Core\XmlExtensions.cs" />
     <Compile Include="ErrorPanel.xaml.cs">
       <DependentUpon>ErrorPanel.xaml</DependentUpon>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Practices.Prism.Commands;
@@ -27,7 +28,7 @@ namespace MusicXMLFormatter
 
     public MainWindowViewModel()
     {
-      _historyService = HistoryService.Instance;
+      _historyService = new HistoryService();
       LoadMusicXMLFileCommand = new DelegateCommand(LoadMusicXMLFile, () => !IsBusy);
       ConvertMusicXMLFileCommand = new DelegateCommand(ConvertMusicXMLFile, () => IsEditingAllowed);
       SaveCurrentDocumentCommand = new DelegateCommand(SaveCurrentDocument, () => IsEditingAllowed);
@@ -43,6 +44,7 @@ namespace MusicXMLFormatter
     private void ShowOptions()
     {
       Options options = new Options();
+      options.ViewModel = new OptionsViewModel(_historyService);
       options.ShowDialog();
     }
 
@@ -100,13 +102,12 @@ namespace MusicXMLFormatter
       {
         IsBusy = true;
         BusyText = "Speichere Datei...";
+        var dispatcher = Dispatcher.CurrentDispatcher;
         var task = Task.Factory.StartNew(() => _currentDocument.Save());
         task.ContinueWith(resultTask =>
         {
           IsBusy = false;
-
-          // update history
-          Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _historyService.Add(_currentDocument)));
+          dispatcher.Invoke(() => _historyService.Add(_currentDocument));
         });
       }
     }

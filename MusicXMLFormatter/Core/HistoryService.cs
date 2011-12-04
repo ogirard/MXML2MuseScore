@@ -10,24 +10,12 @@ namespace MusicXMLFormatter.Core
 {
   public class HistoryService : NotificationObject
   {
-    #region    Singleton
-
-    private static readonly HistoryService _instance = new HistoryService();
-
-    private HistoryService()
+    public readonly string HistoryPath;
+    public HistoryService()
     {
       HistoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Data\\history.xml";
       Initialize();
     }
-
-    public static HistoryService Instance
-    {
-      get { return _instance; }
-    }
-
-    #endregion Singleton
-
-    public readonly string HistoryPath;
 
     private bool _isUpdating;
 

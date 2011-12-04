@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Xml;
 using Microsoft.Practices.Prism.ViewModel;
 using MusicXMLFormatter.Core.Transformer;
@@ -13,6 +14,8 @@ namespace MusicXMLFormatter.Core
   {
     private static readonly IMuseScoreTransformer RemoveCaptionsTransformer = new RemoveCaptionsTransformer();
     private static readonly IMuseScoreTransformer ArrangedByTransformer = new ArrangedByTransformer();
+    private static readonly IMuseScoreTransformer PageSettingsTransformer = new PageSettingsTransformer();
+    private static readonly IMuseScoreTransformer AutoBreakTransformer = new AutoBreakTransformer();
 
     private const string ComposerPrefix = "M: ";
     private const string TexterPrefix = "T: ";
@@ -23,11 +26,18 @@ namespace MusicXMLFormatter.Core
     private const string VoiceOnlySuffix = "_NurMelodie";
 
     private readonly string _fileName;
+    private readonly bool _nextMode;
 
-    public ScoreDocument(string fileName)
+    private ScoreDocument(string fileName, bool nextMode)
     {
       this._fileName = fileName;
+      _nextMode = nextMode;
       this.LoadFromXml();
+    }
+
+    public ScoreDocument(string fileName)
+      : this(fileName, false)
+    {
     }
 
     #region    Properties
@@ -308,7 +318,7 @@ namespace MusicXMLFormatter.Core
         Directory.CreateDirectory(outputDirectory);
       }
 
-      var dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+      var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
       var tempDir = Directory.CreateDirectory(dir + "\\temp\\" + Guid.NewGuid());
       try
       {
@@ -333,7 +343,7 @@ namespace MusicXMLFormatter.Core
 
         if (museScoreFile != null && File.Exists(museScoreFile))
         {
-          ProcessMuseScoreFile(museScoreFile, ArrangedByTransformer, RemoveCaptionsTransformer);
+          ProcessMuseScoreFile(museScoreFile, ArrangedByTransformer, RemoveCaptionsTransformer, PageSettingsTransformer, AutoBreakTransformer);
           var compressedMuseScoreFile = museScore.ConvertMuseScoretoCompressedMuseScore(museScoreFile);
 
           var targetMuseScoreFile = GetFileName(outputDirectory);
@@ -355,7 +365,25 @@ namespace MusicXMLFormatter.Core
             StoreVoiceOnlyVersion(tempDir, xmlFileName, museScore, GetFileVoiceName(outputDirectory));
           }
 
-          Process.Start("file://" + Path.GetDirectoryName(targetMuseScoreFile));
+          if (!_nextMode && xmlFileName.Name.EndsWith(Pattern + MuseScoreApp.XMLFileExt))
+          {
+            for (int i = 1; i < 8; i++)
+            {
+              if (i == Pattern)
+              {
+                i++;
+              }
+
+              TrySaveNext(xmlFileName.FullName.Replace(Pattern + MuseScoreApp.XMLFileExt, i + MuseScoreApp.XMLFileExt), i);
+            }
+          }
+
+          if (!_nextMode)
+          {
+            Process.Start("file://" + Path.GetDirectoryName(targetMuseScoreFile));
+          }
+          // WriteBatchAndXML(Path.GetDirectoryName(targetMuseScoreFile) + "\\__generate" +
+          //                  (Pattern > 0 ? Pattern.ToString() : "") + ".cmd");
         }
       }
       catch (Exception ex)
@@ -367,6 +395,41 @@ namespace MusicXMLFormatter.Core
       finally
       {
         tempDir.Delete(true);
+      }
+    }
+
+    private void TrySaveNext(string xmlFileName, int pattern)
+    {
+      if (!File.Exists(xmlFileName))
+      {
+        return;
+      }
+
+      var tempDoc = new ScoreDocument(xmlFileName, true);
+      tempDoc.Title = Title;
+      tempDoc.SubTitle = SubTitle;
+      tempDoc.ArrangedBy = ArrangedBy;
+      tempDoc.Composer = Composer;
+      tempDoc.Texter = Texter;
+      tempDoc.Pattern = pattern;
+      tempDoc.ExportPDF = ExportPDF;
+      tempDoc.ExportPNG = ExportPNG;
+      tempDoc.ExtractVoice = false;
+      tempDoc.RemoveLabels = RemoveLabels;
+      tempDoc.Save();
+    }
+
+    private void WriteBatchAndXML(string batchFile)
+    {
+      using (var writer = new StreamWriter(batchFile))
+      {
+        writer.WriteLine("@echo off");
+        writer.WriteLine("rem Batch file to re-generate the song in this directory");
+        writer.WriteLine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
+                         string.Format(
+                           "\\MusicXMLFormatter.exe \"{0}\" \"{1}\" \"{2}\" \"{3}\" \"{4}\" \"{5}\" \"{6}\" \"{7}\" \"{8}\" \"{9}\" \"{10}\"",
+                           FileName, Title, SubTitle, Pattern, Composer, Texter, ArrangedBy, ExportPDF, ExportPNG,
+                           ExtractVoice, RemoveLabels));
       }
     }
 
@@ -408,7 +471,7 @@ namespace MusicXMLFormatter.Core
         throw new HandledErrorException("Fehler!", "\"Nur Stimme\" Version konnte nicht gespeichert werden");
       }
 
-      ProcessMuseScoreFile(museScoreVoiceFile, RemoveCaptionsTransformer);
+      ProcessMuseScoreFile(museScoreVoiceFile, RemoveCaptionsTransformer, PageSettingsTransformer, AutoBreakTransformer);
 
       var compressedMuseScoreVoiceFile = museScore.ConvertMuseScoretoCompressedMuseScore(museScoreVoiceFile);
       File.Copy(compressedMuseScoreVoiceFile, targetMuseScoreVoiceFile, true);
@@ -427,7 +490,13 @@ namespace MusicXMLFormatter.Core
 
     private string GetFileVoiceName(string outputDirectory)
     {
-      return GetFileName(outputDirectory).Replace(MuseScoreApp.CompressedMuseScoreFileExt, VoiceOnlySuffix + MuseScoreApp.CompressedMuseScoreFileExt);
+      var songDir = outputDirectory + Title + "\\";
+      if (!Directory.Exists(songDir))
+      {
+        Directory.CreateDirectory(songDir);
+      }
+
+      return songDir + Title.Trim().Replace(" ", "_") + VoiceOnlySuffix + MuseScoreApp.CompressedMuseScoreFileExt;
     }
 
     private void ProcessMuseScoreFile(string museScoreFile, params IMuseScoreTransformer[] transformers)

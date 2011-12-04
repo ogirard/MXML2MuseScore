@@ -11,9 +11,9 @@ namespace MusicXMLFormatter
   {
     private readonly HistoryService _historyService;
 
-    public OptionsViewModel()
+    public OptionsViewModel(HistoryService historyService)
     {
-      _historyService = HistoryService.Instance;
+      _historyService = historyService;
       _outputPath = Settings.Default.OutputPath;
       _musePath = Settings.Default.MuseScoreExe;
 
