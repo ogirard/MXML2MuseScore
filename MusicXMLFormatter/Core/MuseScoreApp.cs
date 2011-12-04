@@ -7,6 +7,12 @@ namespace MusicXMLFormatter.Core
 {
   public class MuseScoreApp
   {
+    public const string MuseScoreFileExt = ".mscx";
+    public const string CompressedMuseScoreFileExt = ".mscz";
+    public const string PNGFileExt = ".png";
+    public const string PDFFileExt = ".pdf";
+    public const string XMLFileExt = ".xml";
+
     private string _museScoreExe;
 
     private string MuseScoreExe
@@ -65,7 +71,7 @@ namespace MusicXMLFormatter.Core
       var process = Process.Start(museScoreStartInfo);
       process.WaitForExit(10000);
 
-      if (!File.Exists(imageFileName.Replace(".png", "-1.png")))
+      if (!File.Exists(imageFileName.Replace(PNGFileExt, "-1" + PNGFileExt)))
       {
         throw new HandledErrorException("Fehler!",
                                 "Aus der MuseScore Datei '" + museScoreFile +
@@ -102,13 +108,13 @@ namespace MusicXMLFormatter.Core
     public string ConvertXMLtoMuseScore(string xmlFile)
     {
       var musicXmlFileInfo = new FileInfo(xmlFile);
-      if (!musicXmlFileInfo.Exists || musicXmlFileInfo.Extension != ".xml")
+      if (!musicXmlFileInfo.Exists || musicXmlFileInfo.Extension != XMLFileExt)
       {
         throw new HandledErrorException("Fehler!",
                                         "Die MusicXML Datei '" + xmlFile +
                                         "' konnte nicht gefunden werden.");
       }
-      string museScoreFileName = musicXmlFileInfo.FullName.Replace(".xml", ".mscx");
+      string museScoreFileName = musicXmlFileInfo.FullName.Replace(XMLFileExt, MuseScoreFileExt);
 
       if (File.Exists(museScoreFileName))
       {
@@ -137,13 +143,13 @@ namespace MusicXMLFormatter.Core
     public string ConvertMuseScoretoCompressedMuseScore(string mscxFile)
     {
       var museScoreFileInfo = new FileInfo(mscxFile);
-      if (!museScoreFileInfo.Exists || museScoreFileInfo.Extension != ".mscx")
+      if (!museScoreFileInfo.Exists || museScoreFileInfo.Extension != MuseScoreFileExt)
       {
         throw new HandledErrorException("Fehler!",
                                 "Die MuseScore Datei '" + mscxFile +
                                 "' konnte nicht gefunden werden.");
       }
-      string compressedMuseScoreFileName = museScoreFileInfo.FullName.Replace(".mscx", ".mscz");
+      string compressedMuseScoreFileName = museScoreFileInfo.FullName.Replace(MuseScoreFileExt, CompressedMuseScoreFileExt);
 
       if (File.Exists(compressedMuseScoreFileName))
       {

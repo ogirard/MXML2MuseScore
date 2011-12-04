@@ -1,30 +1,26 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
 using Microsoft.Practices.Prism.ViewModel;
+using MusicXMLFormatter.Core.Transformer;
 using MusicXMLFormatter.Properties;
-using MusicXMLFormatter.Transformer;
 
 namespace MusicXMLFormatter.Core
 {
   public class ScoreDocument : NotificationObject
   {
-    private static readonly IList<IMuseScoreTransformer> Transformers = new List<IMuseScoreTransformer>();
+    private static readonly IMuseScoreTransformer RemoveCaptionsTransformer = new RemoveCaptionsTransformer();
+    private static readonly IMuseScoreTransformer ArrangedByTransformer = new ArrangedByTransformer();
+
     private const string ComposerPrefix = "M: ";
     private const string TexterPrefix = "T: ";
     private const string ArrangedByPrefix = "arr. ";
     private const string PatternPrefix = " (Begleitvariante ";
 
-    private const string FileNamePostfix = "_Begleitvariante";
-
-    static ScoreDocument()
-    {
-      Transformers.Add(new ArrangedByTransformer());
-      Transformers.Add(new RemoveCaptionsTransformer());
-    }
+    private const string FileNameSuffix = "_Begleitvariante";
+    private const string VoiceOnlySuffix = "_NurMelodie";
 
     private readonly string _fileName;
 
@@ -301,7 +297,7 @@ namespace MusicXMLFormatter.Core
     public void Save()
     {
       var xmlFileName = new FileInfo(_fileName);
-      if (!xmlFileName.Exists || xmlFileName.Extension != ".xml")
+      if (!xmlFileName.Exists || xmlFileName.Extension != MuseScoreApp.XMLFileExt)
       {
         return;
 
@@ -316,29 +312,28 @@ namespace MusicXMLFormatter.Core
       var tempDir = Directory.CreateDirectory(dir + "\\temp\\" + Guid.NewGuid());
       try
       {
-        var tempXml = tempDir.FullName + "\\" + xmlFileName.Name;
-        File.Copy(xmlFileName.FullName, tempXml);
-
-        var xdoc = new XmlDocument();
-        xdoc.Load(tempXml);
-        foreach (XmlElement creditNode in xdoc.SelectNodes("//credit").Cast<XmlElement>().ToList())
+        var mxmlFileName = tempDir.FullName + "\\" + xmlFileName.Name;
+        File.Copy(xmlFileName.FullName, mxmlFileName);
+        var mxmlDoc = new XmlDocument();
+        mxmlDoc.Load(mxmlFileName);
+        foreach (XmlElement creditNode in mxmlDoc.SelectNodes("//credit").Cast<XmlElement>().ToList())
         {
           // remove all existing credit nodes
           creditNode.ParentNode.RemoveChild(creditNode);
         }
 
-        AppendCreditNode(xdoc.DocumentElement, "595.238", "1626.98", "24", "center", "top", Title.Trim());
-        AppendCreditNode(xdoc.DocumentElement, "595.238", "1570.29", "14", "center", "top", GetSubTitleAndPattern());
-        AppendCreditNode(xdoc.DocumentElement, "1133.79", "1559.98", "12", "right", "top", GetComposerAndTexter());
-        AppendCreditNode(xdoc.DocumentElement, "1133.79", "1583.98", "10", "right", "top", GetArrangedBy());
-        xdoc.Save(tempXml);
+        AppendCreditNode(mxmlDoc.DocumentElement, "595.238", "1626.98", "24", "center", "top", Title.Trim());
+        AppendCreditNode(mxmlDoc.DocumentElement, "595.238", "1570.29", "14", "center", "top", GetSubTitleAndPattern());
+        AppendCreditNode(mxmlDoc.DocumentElement, "1133.79", "1559.98", "12", "right", "top", GetComposerAndTexter());
+        AppendCreditNode(mxmlDoc.DocumentElement, "1133.79", "1583.98", "10", "right", "top", GetArrangedBy());
+        mxmlDoc.Save(mxmlFileName);
 
         var museScore = new MuseScoreApp();
-        var museScoreFile = museScore.ConvertXMLtoMuseScore(tempXml);
+        var museScoreFile = museScore.ConvertXMLtoMuseScore(mxmlFileName);
 
         if (museScoreFile != null && File.Exists(museScoreFile))
         {
-          ProcessMuseScoreFile(museScoreFile);
+          ProcessMuseScoreFile(museScoreFile, ArrangedByTransformer, RemoveCaptionsTransformer);
           var compressedMuseScoreFile = museScore.ConvertMuseScoretoCompressedMuseScore(museScoreFile);
 
           var targetMuseScoreFile = GetFileName(outputDirectory);
@@ -347,12 +342,17 @@ namespace MusicXMLFormatter.Core
 
           if (ExportPNG)
           {
-            museScore.ConvertMuseScoreToPNG(compressedMuseScoreFile, targetMuseScoreFile.Replace(".mscz", ".png"), 96);
+            museScore.ConvertMuseScoreToPNG(compressedMuseScoreFile, targetMuseScoreFile.Replace(MuseScoreApp.CompressedMuseScoreFileExt, MuseScoreApp.PNGFileExt), 96);
           }
 
           if (ExportPDF)
           {
-            museScore.ConvertMuseScoreToPDF(compressedMuseScoreFile, targetMuseScoreFile.Replace(".mscz", ".pdf"));
+            museScore.ConvertMuseScoreToPDF(compressedMuseScoreFile, targetMuseScoreFile.Replace(MuseScoreApp.CompressedMuseScoreFileExt, MuseScoreApp.PDFFileExt));
+          }
+
+          if (ExtractVoice)
+          {
+            StoreVoiceOnlyVersion(tempDir, xmlFileName, museScore, GetFileVoiceName(outputDirectory));
           }
 
           Process.Start("file://" + Path.GetDirectoryName(targetMuseScoreFile));
@@ -370,6 +370,51 @@ namespace MusicXMLFormatter.Core
       }
     }
 
+    private void StoreVoiceOnlyVersion(DirectoryInfo tempDir, FileInfo xmlFileName, MuseScoreApp museScore, string targetMuseScoreVoiceFile)
+    {
+      if (!ExtractVoice)
+      {
+        return;
+      }
+
+      var mxmlVoiceOnlyFileName = tempDir.FullName + "\\" + xmlFileName.Name.Replace(MuseScoreApp.XMLFileExt, VoiceOnlySuffix + MuseScoreApp.XMLFileExt);
+      File.Copy(xmlFileName.FullName, mxmlVoiceOnlyFileName);
+
+      var mxmlVoiceDoc = new XmlDocument();
+      mxmlVoiceDoc.Load(mxmlVoiceOnlyFileName);
+
+      foreach (XmlElement creditNode in mxmlVoiceDoc.SelectNodes("//credit").Cast<XmlElement>().ToList())
+      {
+        // remove all existing credit nodes
+        creditNode.ParentNode.RemoveChild(creditNode);
+      }
+
+      AppendCreditNode(mxmlVoiceDoc.DocumentElement, "595.238", "1626.98", "24", "center", "top", Title.Trim());
+      AppendCreditNode(mxmlVoiceDoc.DocumentElement, "1133.79", "1559.98", "12", "right", "top", GetComposerAndTexter());
+      mxmlVoiceDoc.Save(mxmlVoiceOnlyFileName);
+
+      var part2Node = mxmlVoiceDoc.SelectSingleNode("//part[@id='P2']") as XmlElement;
+      if (part2Node == null)
+      {
+        return;
+      }
+      part2Node.ParentNode.RemoveChild(part2Node);
+      mxmlVoiceDoc.Save(mxmlVoiceOnlyFileName);
+
+      var museScoreVoiceFile = museScore.ConvertXMLtoMuseScore(mxmlVoiceOnlyFileName);
+
+      if (museScoreVoiceFile == null || !File.Exists(museScoreVoiceFile))
+      {
+        throw new HandledErrorException("Fehler!", "\"Nur Stimme\" Version konnte nicht gespeichert werden");
+      }
+
+      ProcessMuseScoreFile(museScoreVoiceFile, RemoveCaptionsTransformer);
+
+      var compressedMuseScoreVoiceFile = museScore.ConvertMuseScoretoCompressedMuseScore(museScoreVoiceFile);
+      File.Copy(compressedMuseScoreVoiceFile, targetMuseScoreVoiceFile, true);
+      museScore.ConvertMuseScoreToPNG(compressedMuseScoreVoiceFile, targetMuseScoreVoiceFile.Replace(MuseScoreApp.CompressedMuseScoreFileExt, MuseScoreApp.PNGFileExt), 96);
+    }
+
     private string GetFileName(string outputDirectory)
     {
       var songDir = outputDirectory + Title + "\\";
@@ -377,16 +422,21 @@ namespace MusicXMLFormatter.Core
       {
         Directory.CreateDirectory(songDir);
       }
-      return songDir + Title.Trim().Replace(" ", "_") + (Pattern == 0 ? "" : FileNamePostfix + Pattern) + ".mscz";
+      return songDir + Title.Trim().Replace(" ", "_") + (Pattern == 0 ? "" : FileNameSuffix + Pattern) + MuseScoreApp.CompressedMuseScoreFileExt;
     }
 
-    private void ProcessMuseScoreFile(string museScoreFile)
+    private string GetFileVoiceName(string outputDirectory)
+    {
+      return GetFileName(outputDirectory).Replace(MuseScoreApp.CompressedMuseScoreFileExt, VoiceOnlySuffix + MuseScoreApp.CompressedMuseScoreFileExt);
+    }
+
+    private void ProcessMuseScoreFile(string museScoreFile, params IMuseScoreTransformer[] transformers)
     {
       try
       {
         var museScoreXmlFile = new XmlDocument();
         museScoreXmlFile.Load(museScoreFile);
-        foreach (var museScoreTransformer in Transformers)
+        foreach (var museScoreTransformer in transformers)
         {
           museScoreTransformer.ApplyTransformation(this, museScoreXmlFile);
         }

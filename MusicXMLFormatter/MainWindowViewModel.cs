@@ -2,8 +2,10 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 using Microsoft.Win32;
@@ -102,10 +104,10 @@ namespace MusicXMLFormatter
         task.ContinueWith(resultTask =>
         {
           IsBusy = false;
-        });
 
-        // history
-        _historyService.Add(_currentDocument);
+          // update history
+          Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => _historyService.Add(_currentDocument)));
+        });
       }
     }
 
@@ -168,7 +170,7 @@ namespace MusicXMLFormatter
     {
       foreach (HistoryEntry item in e.AddedItems.OfType<HistoryEntry>())
       {
-        item.ApplyScoreDocument(CurrentDocument);
+        item.ApplyToScoreDocument(CurrentDocument);
       }
     }
 

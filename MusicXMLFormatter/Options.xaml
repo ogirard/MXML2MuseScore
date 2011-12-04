@@ -7,6 +7,8 @@
         Width="600"
         Height="450"
         ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
         WindowStyle="ToolWindow">
   <Window.Resources>
     <Style TargetType="{x:Type TextBlock}">
@@ -26,6 +28,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
@@ -53,14 +56,13 @@
               Grid.Column="1"
               Margin="4"
               ItemsSource="{Binding History}"
-              SelectedItem="{Binding SelectedHistoryEntry}">
-      <i:Interaction.Triggers>
-        <i:EventTrigger EventName="KeyUpHandler">
-          <WPF:EventToCommand Command="{Binding ListKeyUpCommand}" PassEventArgsToCommand="True" />
-        </i:EventTrigger>
-      </i:Interaction.Triggers>
-    </ListView>
+              SelectedItem="{Binding SelectedHistoryEntry}" />
     <Button Grid.Row="3"
+            Grid.ColumnSpan="2"
+            HorizontalAlignment="Right"
+            Command="{Binding DeleteEntryCommand}"
+            Content="Eintrag löschen" />
+    <Button Grid.Row="4"
             Grid.ColumnSpan="2"
             Click="SaveClickHandler"
             Command="{Binding SaveCommand}"

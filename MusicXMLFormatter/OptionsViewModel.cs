@@ -18,15 +18,12 @@ namespace MusicXMLFormatter
       _musePath = Settings.Default.MuseScoreExe;
 
       SaveCommand = new DelegateCommand(SaveOptions);
-      ListKeyUpCommand = new DelegateCommand<KeyEventArgs>(DeleteEntry, e => SelectedHistoryEntry != null);
+      DeleteEntryCommand = new DelegateCommand(DeleteEntry, () => SelectedHistoryEntry != null);
     }
 
-    private void DeleteEntry(KeyEventArgs e)
+    private void DeleteEntry()
     {
-      if (e.Key == Key.Delete)
-      {
-        _historyService.Remove(SelectedHistoryEntry);
-      }
+      _historyService.Remove(SelectedHistoryEntry);
     }
 
     private void SaveOptions()
@@ -77,13 +74,13 @@ namespace MusicXMLFormatter
         {
           this._selectedHistoryEntry = value;
           RaisePropertyChanged(() => this.SelectedHistoryEntry);
-          this.ListKeyUpCommand.RaiseCanExecuteChanged();
+          this.DeleteEntryCommand.RaiseCanExecuteChanged();
         }
       }
     }
 
     public ICommand SaveCommand { get; set; }
-    public DelegateCommand<KeyEventArgs> ListKeyUpCommand { get; set; }
+    public DelegateCommand DeleteEntryCommand { get; set; }
 
     public ObservableCollection<HistoryEntry> History
     {

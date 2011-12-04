@@ -97,11 +97,8 @@ namespace MusicXMLFormatter.Core
       }
 
       var doc = XDocument.Load(HistoryPath);
-      foreach (var child in doc.Root.Elements())
-      {
-        child.Remove();
-      }
-
+      doc.Root.RemoveNodes();
+      
       foreach (var historyEntry in History)
       {
         doc.Root.Add(historyEntry.ToXmlNode());

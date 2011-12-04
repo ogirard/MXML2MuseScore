@@ -1,7 +1,6 @@
 ﻿using System.Xml;
-using MusicXMLFormatter.Core;
 
-namespace MusicXMLFormatter.Transformer
+namespace MusicXMLFormatter.Core.Transformer
 {
   public class RemoveCaptionsTransformer : IMuseScoreTransformer
   {

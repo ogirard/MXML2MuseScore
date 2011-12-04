@@ -49,7 +49,7 @@ namespace MusicXMLFormatter.Core
       return entry;
     }
 
-    public void ApplyScoreDocument(ScoreDocument doc)
+    public void ApplyToScoreDocument(ScoreDocument doc)
     {
       doc.Title = Title;
       doc.SubTitle = SubTitle;
